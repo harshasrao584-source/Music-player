@@ -1,0 +1,42 @@
+services:
+  # 1. Backend Web Service (Node/Express)
+  - type: web
+    name: melodyai-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true # Generates a secure random JWT key automatically
+      - key: MONGODB_URI
+        sync: false # You will link your Atlas Connection URI in the Render dashboard
+      - key: UPLOAD_PATH
+        value: uploads
+
+  # 2. Frontend Static Site (React/Vite)
+  - type: web
+    name: melodyai-frontend
+    env: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    routes:
+      # Proxy all API requests to the backend service
+      - type: rewrite
+        source: /api/*
+        destination: https://melodyai-backend.onrender.com/api/*
+      # Proxy all asset uploads (audio, covers) to the backend storage
+      - type: rewrite
+        source: /uploads/*
+        destination: https://melodyai-backend.onrender.com/uploads/*
+      # Single Page App routing fallback
+      - type: rewrite
+        source: /*
+        destination: /index.html
