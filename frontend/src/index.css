@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.7);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --accent: #8b5cf6;
+    --accent-glow: rgba(139, 92, 246, 0.35);
+    --border-color: rgba(226, 232, 240, 0.8);
+    --glass-bg: rgba(255, 255, 255, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(12px);
+    --shadow-color: rgba(148, 163, 184, 0.1);
+  }
+
+  .dark {
+    --bg-main: #08050e;
+    --bg-sidebar: #0f0a1d;
+    --bg-card: rgba(22, 14, 38, 0.6);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent: #a78bfa;
+    --accent-glow: rgba(167, 139, 250, 0.35);
+    --border-color: rgba(255, 255, 255, 0.06);
+    --glass-bg: rgba(12, 8, 22, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-blur: blur(20px);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+    margin: 0;
+  }
+}
+
+/* Glassmorphism utility classes */
+.glass-effect {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 var(--shadow-color);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px 0 var(--shadow-color);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Keyframes for album rotation and visualizer pulse */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.paused {
+  animation-play-state: paused;
+}
+
+/* Pulse animation for playing waves */
+@keyframes equalizer-bar {
+  0%, 100% {
+    transform: scaleY(0.2);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.equalizer-bar-anim {
+  animation: equalizer-bar 1.2s ease-in-out infinite;
+  transform-origin: bottom;
+}

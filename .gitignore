@@ -1,0 +1,25 @@
+# Dependency directories
+node_modules/
+**/node_modules/
+
+# Local configuration / private keys
+.env
+backend/.env
+
+# Large downloaded assets (MP3s and JPGs)
+backend/uploads/
+!backend/uploads/default-cover.png
+
+# Production builds
+dist/
+frontend/dist/
+
+# Logs and cache folders
+.npm-cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System files
+.DS_Store
+Thumbs.db
