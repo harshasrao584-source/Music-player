@@ -149,6 +149,7 @@ music-player/
 
 ### 2. Audio Playback Engine
 * **Context Core**: [`AudioContext.jsx`](file:///f:/music%20player/frontend/src/context/AudioContext.jsx) instantiates a single persistent HTML5 `Audio` element. It synchronizes current playback states (volume, progress percentage, track details, loop settings, and queue index) globally across all components.
+* **Non-Blocking State Updates**: Event listeners on the HTML5 `Audio` element are bound only once on component mount. The `ended` handler reads state variables dynamically using a React `useRef` reference to the `handleSongEnded` function, preventing playback from pausing or resetting when shuffle, repeat mode, or the queue queue changes.
 * **Visual Equalizer**: [`Equalizer.jsx`](file:///f:/music%20player/frontend/src/components/Equalizer.jsx) renders bouncing vertical bars using staggered CSS keyframes. When audio is paused, the animations pause immediately.
 * **Queue & Lyrics**: The queue array stores tracks. When a song finishes, `AudioContext` listens for the `ended` event and automatically increments the queue index to play the next track. The lyrics drawer reads synced text files mapped in the catalog database and scrolls to highlight the current line based on the playback position.
 * **Keyboard Hotkeys**: A global `keydown` event listener enables spacebar triggers (Play/Pause) and 'M' keys (Mute Volume) anywhere in the app, ignoring triggers when the user is typing in forms.
@@ -159,7 +160,7 @@ music-player/
   2. It computes a **Personal Taste Vector**: Favorited tracks contribute $+5$ points, and played tracks contribute $+1$ point to their respective genre and artist preference scores.
   3. It sorts the scores to find the user's top genres and artists.
   4. It queries the `Song` database for tracks matching those top categories, filtering out the 5 most recently played songs to ensure fresh recommendations.
-* **Mood Station Selector**: Users click mood buttons (Happy, Sad, Workout, etc.) on the dashboard. The frontend requests the `/api/recommendations/mood` endpoint. The backend maps the mood to target genres (e.g. *Relaxed* $\rightarrow$ *Lo-Fi, Ambient, Jazz*) and returns matching tracks.
+* **Mood Station Selector**: Users click mood buttons (Happy, Sad, Workout, etc.) on the dashboard. The frontend requests the `/api/recommendations/mood` endpoint. The backend maps the mood to target genres (including exact seeded genres like *Relaxed*, *Energetic*, *Focus*, and *Workout*) and returns matching tracks.
 
 ### 4. Listening Analytics Pipeline
 * **Log Record**: When a song plays for more than 5 seconds, the frontend posts to `/api/songs/:id/play`. The backend logs a new entry in [`ListeningHistory`](file:///f:/music%20player/backend/models/ListeningHistory.js) and increments the song's `playCount`.

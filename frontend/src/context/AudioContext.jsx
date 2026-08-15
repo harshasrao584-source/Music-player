@@ -16,6 +16,7 @@ export const AudioProvider = ({ children }) => {
   const [queueIndex, setQueueIndex] = useState(-1);
 
   const audioRef = useRef(new Audio());
+  const handleSongEndedRef = useRef();
 
   // Helper to format source URLs
   const getFullUrl = (path) => {
@@ -27,7 +28,6 @@ export const AudioProvider = ({ children }) => {
   // Configure audio properties on load
   useEffect(() => {
     const audio = audioRef.current;
-    audio.volume = volume;
 
     const onTimeUpdate = () => {
       setProgress(audio.currentTime);
@@ -38,7 +38,9 @@ export const AudioProvider = ({ children }) => {
     };
 
     const onEnded = () => {
-      handleSongEnded();
+      if (handleSongEndedRef.current) {
+        handleSongEndedRef.current();
+      }
     };
 
     audio.addEventListener('timeupdate', onTimeUpdate);
@@ -51,7 +53,7 @@ export const AudioProvider = ({ children }) => {
       audio.removeEventListener('ended', onEnded);
       audio.pause();
     };
-  }, [queue, queueIndex, isRepeat, isShuffle]);
+  }, []);
 
   // Adjust volume
   useEffect(() => {
@@ -227,6 +229,8 @@ export const AudioProvider = ({ children }) => {
       nextSong();
     }
   };
+
+  handleSongEndedRef.current = handleSongEnded;
 
   const seekTo = (seconds) => {
     const audio = audioRef.current;

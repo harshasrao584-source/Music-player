@@ -17,11 +17,11 @@ const getOptionalUser = async (req) => {
   return null;
 };
 
-// @desc    Get all songs (with search, genre filter, etc.)
+// @desc    Get all songs (with search, genre/language filter, etc.)
 // @route   GET /api/songs
 // @access  Public
 export const getAllSongs = async (req, res) => {
-  const { search, genre, limit, page } = req.query;
+  const { search, genre, language, limit, page } = req.query;
 
   try {
     const query = {};
@@ -30,13 +30,18 @@ export const getAllSongs = async (req, res) => {
       query.genre = { $regex: new RegExp('^' + genre + '$', 'i') };
     }
 
+    if (language) {
+      query.language = { $regex: new RegExp('^' + language + '$', 'i') };
+    }
+
     if (search) {
       // Use text search index or regex fallback
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
         { artistName: { $regex: search, $options: 'i' } },
         { albumName: { $regex: search, $options: 'i' } },
-        { genre: { $regex: search, $options: 'i' } }
+        { genre: { $regex: search, $options: 'i' } },
+        { language: { $regex: search, $options: 'i' } }
       ];
     }
 

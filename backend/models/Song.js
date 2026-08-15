@@ -31,6 +31,12 @@ const songSchema = new mongoose.Schema({
     trim: true,
     index: true
   },
+  language: {
+    type: String,
+    required: true,
+    trim: true,
+    index: true
+  },
   duration: {
     type: Number, // in seconds
     required: true
@@ -60,7 +66,10 @@ const songSchema = new mongoose.Schema({
 });
 
 // Text index for fast multi-field search
-songSchema.index({ title: 'text', artistName: 'text', albumName: 'text', genre: 'text' });
+songSchema.index(
+  { title: 'text', artistName: 'text', albumName: 'text', genre: 'text', language: 'text' },
+  { language_override: 'none' }
+);
 
 const Song = mongoose.model('Song', songSchema);
 export default Song;

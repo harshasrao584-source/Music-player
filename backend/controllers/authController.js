@@ -18,7 +18,12 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
-    const userExists = await User.findOne({ $or: [{ email }, { username }] });
+    const userExists = await User.findOne({
+      $or: [
+        { email: email.toLowerCase() },
+        { username: { $regex: new RegExp('^' + username.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '$', 'i') } }
+      ]
+    });
     if (userExists) {
       return res.status(400).json({ message: 'Username or email already exists' });
     }
@@ -29,7 +34,7 @@ export const registerUser = async (req, res) => {
 
     const user = await User.create({
       username,
-      email,
+      email: email.toLowerCase(),
       password,
       role
     });
@@ -54,6 +59,7 @@ export const registerUser = async (req, res) => {
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
+// @desc    Auth user & get token
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -62,11 +68,11 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
-    // Find by email or username
+    // Find by email or username (case-insensitive)
     const user = await User.findOne({
       $or: [
         { email: email.toLowerCase() },
-        { username: email }
+        { username: { $regex: new RegExp('^' + email.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '$', 'i') } }
       ]
     });
 

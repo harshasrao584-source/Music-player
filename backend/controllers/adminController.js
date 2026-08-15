@@ -76,6 +76,7 @@ export const addSong = async (req, res) => {
       album: album ? album._id : null,
       albumName: album ? album.title : '',
       genre: genre.trim(),
+      language: (req.body.language || 'English').trim(),
       duration: parseFloat(duration),
       audioUrl: `/uploads/${audioFile.filename}`,
       coverUrl: coverFile ? `/uploads/${coverFile.filename}` : '/uploads/default-cover.png'
@@ -120,6 +121,7 @@ export const editSong = async (req, res) => {
 
     if (title) song.title = title.trim();
     if (genre) song.genre = genre.trim();
+    if (req.body.language) song.language = req.body.language.trim();
     if (duration) song.duration = parseFloat(duration);
 
     // If artist changes, resolve or create the new one

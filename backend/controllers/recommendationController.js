@@ -104,10 +104,10 @@ export const getMoodRecommendations = async (req, res) => {
   const moodGenreMap = {
     happy: ['Pop', 'Dance', 'Disco', 'Synthwave', 'Happy'],
     sad: ['Acoustic', 'Indie', 'Slow', 'Sad', 'Blues', 'RnB'],
-    relaxed: ['Lo-Fi', 'Ambient', 'Classical', 'Jazz', 'Chill', 'Soul'],
-    energetic: ['Rock', 'Electronic', 'Metal', 'Dance', 'Pop', 'Edm'],
-    focus: ['Ambient', 'Classical', 'Instrumental', 'Lo-Fi', 'Soundtrack'],
-    workout: ['Electronic', 'Synthwave', 'Hip-Hop', 'Dance', 'Rock', 'Edm'],
+    relaxed: ['Lo-Fi', 'Ambient', 'Classical', 'Jazz', 'Chill', 'Soul', 'Relaxed'],
+    energetic: ['Rock', 'Electronic', 'Metal', 'Dance', 'Pop', 'Edm', 'Energetic'],
+    focus: ['Ambient', 'Classical', 'Instrumental', 'Lo-Fi', 'Soundtrack', 'Focus'],
+    workout: ['Electronic', 'Synthwave', 'Hip-Hop', 'Dance', 'Rock', 'Edm', 'Workout'],
     romantic: ['Soul', 'RnB', 'Slow', 'Romantic', 'Acoustic', 'Love']
   };
 

@@ -13,9 +13,16 @@ import Playlist from '../models/Playlist.js';
 import Favorite from '../models/Favorite.js';
 import ListeningHistory from '../models/ListeningHistory.js';
 
-dotenv.config();
+// Load Env variables from current directory or backend directory
+if (fs.existsSync(path.resolve('.env'))) {
+  dotenv.config({ path: path.resolve('.env') });
+} else if (fs.existsSync(path.resolve('backend', '.env'))) {
+  dotenv.config({ path: path.resolve('backend', '.env') });
+} else {
+  dotenv.config();
+}
 
-const uploadDir = path.resolve('uploads');
+const uploadDir = path.resolve(process.env.UPLOAD_PATH || 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -84,11 +91,34 @@ const writeDummyFile = (destPath) => {
 };
 
 const runSeed = async () => {
-  try {
-    console.log('Connecting to database...');
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/melodyai');
-    console.log('Database connected.');
+  const primaryURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/melodyai';
+  const fallbackURI = 'mongodb://127.0.0.1:27017/melodyai';
 
+  try {
+    console.log(`Connecting to MongoDB: ${primaryURI}...`);
+    await mongoose.connect(primaryURI, {
+      serverSelectionTimeoutMS: 5000
+    });
+    console.log('Database connected.');
+  } catch (error) {
+    console.error(`Database connection error: ${error.message}`);
+    if (primaryURI !== fallbackURI) {
+      try {
+        console.log(`Attempting fallback connection to local MongoDB: ${fallbackURI}...`);
+        await mongoose.connect(fallbackURI, {
+          serverSelectionTimeoutMS: 5000
+        });
+        console.log('Database connected (Fallback).');
+      } catch (fallbackError) {
+        console.error(`Fallback Database connection error: ${fallbackError.message}`);
+        process.exit(1);
+      }
+    } else {
+      process.exit(1);
+    }
+  }
+
+  try {
     // 1. Clean existing records
     console.log('Cleaning existing collection data...');
     await User.deleteMany({});
@@ -99,6 +129,14 @@ const runSeed = async () => {
     await Favorite.deleteMany({});
     await ListeningHistory.deleteMany({});
     console.log('Collections cleared.');
+
+    // Drop old indexes to clear the faulty language-override settings cached on Atlas
+    try {
+      await Song.collection.dropIndexes();
+      console.log('Song collection indexes dropped.');
+    } catch (err) {
+      console.log('No existing song indexes to drop.');
+    }
 
     // 2. Create Users (hashed passwords via userSchema.pre hook)
     console.log('Seeding users...');
@@ -123,162 +161,108 @@ const runSeed = async () => {
 
 
     // 3. Define Seed Data Structure
+    // 3. Define Seed Data Structure with Famous Real-World Artists
     const artistsData = [
-      { name: 'Helix Project', bio: 'Helix Project is a synthetic electronic composer exploring spatial audio fields.', coverUrl: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=500&q=80' },
-      { name: 'Lumina', bio: 'Lumina is an acoustic indie outfit specializing in lo-fi beats and relaxing melodies.', coverUrl: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=500&q=80' },
-      { name: 'Echo Forge', bio: 'Echo Forge is a high-tempo progressive metal project crafting energetic guitar loops.', coverUrl: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500&q=80' },
-      { name: 'Arijit Sen', bio: 'Arijit Sen is a modern playback singer and composer known for emotional Bollywood and Hindi pop tracks.', coverUrl: 'https://images.unsplash.com/photo-1487180142328-0c4e37023af5?w=500&q=80' },
-      { name: 'Karthik Raja', bio: 'Karthik Raja crafts soulful Tamil acoustic melodies and contemporary cinema themes.', coverUrl: 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80' },
-      { name: 'Puneeth Kumar', bio: 'Puneeth Kumar is an instrumentalist and singer delivering deep Kannada anthems and folk tunes.', coverUrl: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80' },
-      { name: 'Ramesh Naik', bio: 'Ramesh Naik is a traditional Tulu singer preserving coastal folk beats and cultural rhythm songs.', coverUrl: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80' },
-      { name: 'Vineeth Hari', bio: 'Vineeth Hari is an indie Malayalam composer creating tranquil acoustic and lo-fi tracks from Kerala.', coverUrl: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80' }
+      { name: 'Ed Sheeran', bio: 'Edward Christopher Sheeran is a globally celebrated English singer-songwriter and pop icon.', coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80' },
+      { name: 'Arijit Singh', bio: 'Arijit Singh is a legendary Indian playback singer known for soulful romantic Hindi pop ballads.', coverUrl: 'https://images.unsplash.com/photo-1487180142328-0c4e37023af5?w=500&q=80' },
+      { name: 'Anirudh Ravichander', bio: 'Anirudh is a leading music composer and singer dominating the Tamil and South Indian film music industry.', coverUrl: 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80' },
+      { name: 'Vijay Prakash', bio: 'Vijay Prakash is an acclaimed Indian playback singer and composer delivering rich Kannada melodies.', coverUrl: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80' },
+      { name: 'Traditional Coastal', bio: 'Traditional folk musicians and groups preserving the cultural beats of Tulunadu.', coverUrl: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80' },
+      { name: 'Vineeth Sreenivasan', bio: 'Vineeth is a multi-talented Malayalam playback singer, actor, director, and lyricist.', coverUrl: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80' },
+      { name: 'Sid Sriram', bio: 'Sid Sriram is a prominent Carnatic-trained playback singer popular for Telugu romantic melodies.', coverUrl: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=500&q=80' }
     ];
 
     const albumsData = [
-      { title: 'Synthwave Dreams', artistName: 'Helix Project', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80' },
-      { title: 'Chill Whispers', artistName: 'Lumina', releaseYear: 2023, coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80' },
-      { title: 'Iron Rhythm', artistName: 'Echo Forge', releaseYear: 2025, coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80' },
-      { title: 'Bollywood Waves', artistName: 'Arijit Sen', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1487180142328-0c4e37023af5?w=500&q=80' },
-      { title: 'Madras Vibes', artistName: 'Karthik Raja', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80' },
-      { title: 'Sandalwood Beats', artistName: 'Puneeth Kumar', releaseYear: 2023, coverUrl: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80' },
-      { title: 'Tulunada Janapada', artistName: 'Ramesh Naik', releaseYear: 2022, coverUrl: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80' },
-      { title: 'Kerala Rhythms', artistName: 'Vineeth Hari', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80' }
+      { title: 'Divide & Collab', artistName: 'Ed Sheeran', releaseYear: 2017, coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80' },
+      { title: 'Bollywood Magic', artistName: 'Arijit Singh', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1487180142328-0c4e37023af5?w=500&q=80' },
+      { title: 'Madras Hits', artistName: 'Anirudh Ravichander', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80' },
+      { title: 'Sandalwood Gems', artistName: 'Vijay Prakash', releaseYear: 2023, coverUrl: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80' },
+      { title: 'Tulunada Folk', artistName: 'Traditional Coastal', releaseYear: 2022, coverUrl: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80' },
+      { title: 'Mollywood Vibe', artistName: 'Vineeth Sreenivasan', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80' },
+      { title: 'Tollywood Classics', artistName: 'Sid Sriram', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80' }
     ];
 
-    const songsData = [
-      {
-        title: 'Helix Resonance',
-        artistName: 'Helix Project',
-        albumName: 'Synthwave Dreams',
-        genre: 'Electronic',
-        duration: 372,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=500&q=80',
-        audioFilename: 'song-electronic.mp3',
-        coverFilename: 'cover-electronic.jpg'
-      },
-      {
-        title: 'Neon Horizon',
-        artistName: 'Helix Project',
-        albumName: 'Synthwave Dreams',
-        genre: 'Synthwave',
-        duration: 423,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80',
-        audioFilename: 'song-synthwave.mp3',
-        coverFilename: 'cover-synthwave.jpg'
-      },
-      {
-        title: 'Acoustic Solitude',
-        artistName: 'Lumina',
-        albumName: 'Chill Whispers',
-        genre: 'Acoustic',
-        duration: 302,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=500&q=80',
-        audioFilename: 'song-acoustic.mp3',
-        coverFilename: 'cover-acoustic.jpg'
-      },
-      {
-        title: 'Midnight Lo-Fi',
-        artistName: 'Lumina',
-        albumName: 'Chill Whispers',
-        genre: 'Lo-Fi',
-        duration: 302,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80',
-        audioFilename: 'song-lofi.mp3',
-        coverFilename: 'cover-lofi.jpg'
-      },
-      {
-        title: 'Ambient Focus',
-        artistName: 'Lumina',
-        albumName: 'Chill Whispers',
-        genre: 'Ambient',
-        duration: 362,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80',
-        audioFilename: 'song-ambient.mp3',
-        coverFilename: 'cover-ambient.jpg'
-      },
-      {
-        title: 'Heavy Forge Pulse',
-        artistName: 'Echo Forge',
-        albumName: 'Iron Rhythm',
-        genre: 'Rock',
-        duration: 582,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500&q=80',
-        audioFilename: 'song-rock.mp3',
-        coverFilename: 'cover-rock.jpg'
-      },
-      {
-        title: 'Dil Se Beats (Hindi Pop)',
-        artistName: 'Arijit Sen',
-        albumName: 'Bollywood Waves',
-        genre: 'Happy',
-        duration: 412,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1487180142328-0c4e37023af5?w=500&q=80',
-        audioFilename: 'song-hindi.mp3',
-        coverFilename: 'cover-hindi.jpg'
-      },
-      {
-        title: 'Tamil Kadavule Melody',
-        artistName: 'Karthik Raja',
-        albumName: 'Madras Vibes',
-        genre: 'Romantic',
-        duration: 518,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80',
-        audioFilename: 'song-tamil.mp3',
-        coverFilename: 'cover-tamil.jpg'
-      },
-      {
-        title: 'Karunada Vaibhava Anthem',
-        artistName: 'Puneeth Kumar',
-        albumName: 'Sandalwood Beats',
-        genre: 'Focus',
-        duration: 492,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80',
-        audioFilename: 'song-kannada.mp3',
-        coverFilename: 'cover-kannada.jpg'
-      },
-      {
-        title: 'Mokeda Singari Folk',
-        artistName: 'Ramesh Naik',
-        albumName: 'Tulunada Janapada',
-        genre: 'Workout',
-        duration: 531,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80',
-        audioFilename: 'song-tulu.mp3',
-        coverFilename: 'cover-tulu.jpg'
-      },
-      {
-        title: 'Malabar Cafe Calm',
-        artistName: 'Vineeth Hari',
-        albumName: 'Kerala Rhythms',
-        genre: 'Relaxed',
-        duration: 472,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80',
-        audioFilename: 'song-malayalam.mp3',
-        coverFilename: 'cover-malayalam.jpg'
-      },
-      {
-        title: 'English Retro Beats',
-        artistName: 'Helix Project',
-        albumName: 'Synthwave Dreams',
-        genre: 'Energetic',
-        duration: 452,
-        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3',
-        coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80',
-        audioFilename: 'song-english-retro.mp3',
-        coverFilename: 'cover-english-retro.jpg'
+    // Generate 100 songs programmatically to populate the database with a massive catalog
+    const languages = ['Hindi', 'English', 'Tamil', 'Kannada', 'Tulu', 'Malayalam', 'Telugu'];
+    const genres = ['Happy', 'Sad', 'Relaxed', 'Energetic', 'Focus', 'Workout', 'Romantic'];
+    
+    const mockTitles = {
+      Hindi: ['Kesariya', 'Apna Bana Le', 'Tum Hi Ho', 'Channa Mereya', 'Kabira', 'Pehla Nasha', 'Mitwa', 'Kal Ho Naa Ho', 'Gali Mein Aaj Chand', 'Zalima', 'Raataan Lambiyan', 'Dil Diyan Gallan', 'Tere Sang Yaara', 'Heeriye', 'Janiye'],
+      English: ['Shape of You', 'Blinding Lights', 'Stay', 'As It Was', 'Flowers', 'Perfect', 'Someone Like You', 'Bad Habits', 'Let Me Love You', 'Attention', 'Believer', 'Starboy', 'Thinking Out Loud', 'Photograph', 'Love Yourself'],
+      Tamil: ['Rowdy Baby', 'Kolaveri Di', 'Arabic Kuthu', 'Kaala Chashma Tamil', 'Vaseegara', 'Tum Tum', 'Kannazhaga', 'Naattu Koothu', 'Mangalyam', 'Enna Sona Tamil', 'Neeye', 'Kadhale Kadhale', 'Theri Anthem', 'Aalaporaan Tamilan', 'Anbil Avan'],
+      Kannada: ['Singara Siriye', 'Belageddu', 'KGF Salaam Rocky Bhai', 'Raajakumara', 'Dheera Dheera KGF', 'Tagaru Banthu Tagaru', 'Ninna Gungalli', 'Bombe Helutaithe', 'Yarivalu', 'Chanda Chanda', 'Gombe Gombe', 'Natasaarvabhowma', 'Nee Sanihake', 'Sanju Geetha', 'Karunada Sound'],
+      Tulu: ['Mokeda Singari', 'Banta Aata', 'Pilibail Yamunakka', 'Solluda Vibe', 'Namma Tulunad', 'Coastal Rhythm', 'Porlu Tulu', 'Siri Jatre', 'Kalasa Folk', 'Aatadonji', 'Karavali Folk', 'Ranga Ranga', 'Bale Tulu', 'Singari Part 2', 'Tulunada Siri'],
+      Malayalam: ['Jimikki Kammal', 'Darshana', 'Malare', 'Pala Palli', 'Kavithaye', 'Lailakame', 'Chinnamma', 'Thiruvaavanira', 'Indie Malabar', 'Aanandham', 'Kalyani', 'Indie Kerala', 'Malabar Coast', 'Premam Vibe', 'Kavitha Calm'],
+      Telugu: ['Naatu Naatu', 'Samajavaragamana', 'Butta Bomma', 'Oo Antava Mava', 'Srivalli', 'Inkem Inkem Inkem Kaavaale', 'Adiga Adiga', 'Ramuloo Ramulaa', 'Pushpa Blast', 'Tollywood Retro', 'Vennela Beats', 'Chitti Beat', 'Geetha Govindam', 'Prema Vennela', 'Nuvvu Nenu Prema']
+    };
+
+    const songsData = [];
+
+    for (let i = 0; i < 100; i++) {
+      const language = languages[i % languages.length];
+      const genre = genres[i % genres.length];
+      
+      const titlesList = mockTitles[language];
+      const baseTitle = titlesList[Math.floor(i / languages.length) % titlesList.length];
+      const title = `${baseTitle} (Vol. ${Math.floor(i / (languages.length * titlesList.length)) + 1})`;
+      
+      let artistName = 'Ed Sheeran';
+      let albumName = 'Divide & Collab';
+      
+      if (language === 'Hindi') {
+        artistName = 'Arijit Singh';
+        albumName = 'Bollywood Magic';
+      } else if (language === 'Tamil') {
+        artistName = 'Anirudh Ravichander';
+        albumName = 'Madras Hits';
+      } else if (language === 'Kannada') {
+        artistName = 'Vijay Prakash';
+        albumName = 'Sandalwood Gems';
+      } else if (language === 'Tulu') {
+        artistName = 'Traditional Coastal';
+        albumName = 'Tulunada Folk';
+      } else if (language === 'Malayalam') {
+        artistName = 'Vineeth Sreenivasan';
+        albumName = 'Mollywood Vibe';
+      } else if (language === 'Telugu') {
+        artistName = 'Sid Sriram';
+        albumName = 'Tollywood Classics';
       }
-    ];
+
+      // We cycle through 16 SoundHelix song links to share physical file downloads
+      const trackIndex = (i % 16) + 1;
+      const audioUrl = `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${trackIndex}.mp3`;
+      const audioFilename = `song-seed-${trackIndex}.mp3`;
+
+      // Cycle cover art unsplash links
+      const coverUrlsList = [
+        'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=500&q=80',
+        'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80',
+        'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=500&q=80',
+        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80',
+        'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80',
+        'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500&q=80',
+        'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80',
+        'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80',
+        'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80',
+        'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80'
+      ];
+      const coverUrl = coverUrlsList[i % coverUrlsList.length];
+      const coverFilename = `cover-seed-${(i % 10) + 1}.jpg`;
+
+      songsData.push({
+        title,
+        artistName,
+        albumName,
+        genre,
+        language,
+        duration: 240 + (i * 7) % 180,
+        audioUrl,
+        coverUrl,
+        audioFilename,
+        coverFilename
+      });
+    }
 
     // 4. Seed Artists
     console.log('Downloading artist images and seeding artists...');
@@ -325,6 +309,7 @@ const runSeed = async () => {
         album: album._id,
         albumName: album.title,
         genre: s.genre,
+        language: s.language,
         duration: s.duration,
         coverUrl: coverPath,
         audioUrl: audioPath,

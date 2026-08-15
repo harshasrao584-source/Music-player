@@ -9,6 +9,7 @@ backend/.env
 # Large downloaded assets (MP3s and JPGs)
 backend/uploads/
 !backend/uploads/default-cover.png
+uploads/
 
 # Production builds
 dist/

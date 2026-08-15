@@ -15,11 +15,23 @@ const Search = () => {
   const [loading, setLoading] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null); // track which song's playlist-dropdown is open
   const [notification, setNotification] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('');
 
-  const fetchResults = async (searchVal) => {
+  const languages = [
+    { name: 'All', code: '' },
+    { name: 'Hindi', code: 'Hindi' },
+    { name: 'Tulu', code: 'Tulu' },
+    { name: 'Kannada', code: 'Kannada' },
+    { name: 'Tamil', code: 'Tamil' },
+    { name: 'Malayalam', code: 'Malayalam' },
+    { name: 'Telugu', code: 'Telugu' },
+    { name: 'English', code: 'English' }
+  ];
+
+  const fetchResults = async (searchVal, langVal = selectedLanguage) => {
     setLoading(true);
     try {
-      const res = await axios.get(`/songs?search=${searchVal}`);
+      const res = await axios.get(`/songs?search=${searchVal}&language=${langVal}`);
       setResults(res.data.songs || []);
     } catch (err) {
       console.error('Failed to search songs:', err.message);
@@ -39,14 +51,19 @@ const Search = () => {
   };
 
   useEffect(() => {
-    fetchResults('');
+    fetchResults('', selectedLanguage);
     fetchPlaylists();
   }, [user]);
 
   const handleSearchChange = (e) => {
     const val = e.target.value;
     setQuery(val);
-    fetchResults(val);
+    fetchResults(val, selectedLanguage);
+  };
+
+  const handleLanguageSelect = (langCode) => {
+    setSelectedLanguage(langCode);
+    fetchResults(query, langCode);
   };
 
   const handleAddToPlaylist = async (playlistId, songId) => {
@@ -91,6 +108,26 @@ const Search = () => {
           placeholder="What do you want to listen to?"
           className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-[var(--border-color)] outline-hidden focus:border-violet-500 text-sm focus:bg-white/10 dark:focus:bg-black/20 transition-all font-medium"
         />
+      </div>
+
+      {/* Language Filter Badges */}
+      <div className="flex flex-wrap gap-2.5 py-1">
+        {languages.map((lang) => {
+          const isActive = selectedLanguage === lang.code;
+          return (
+            <button
+              key={lang.name}
+              onClick={() => handleLanguageSelect(lang.code)}
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 hover:scale-105 cursor-pointer ${
+                isActive
+                  ? 'bg-linear-to-r from-violet-600 to-fuchsia-500 text-white shadow-lg shadow-violet-500/25 border border-transparent'
+                  : 'bg-white/5 border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/10'
+              }`}
+            >
+              {lang.name}
+            </button>
+          );
+        })}
       </div>
 
       {/* Results Listing */}
