@@ -22,6 +22,11 @@ export const AudioProvider = ({ children }) => {
   const getFullUrl = (path) => {
     if (!path) return '';
     if (path.startsWith('http')) return path;
+    const envApi = import.meta.env.VITE_API_URL;
+    if (envApi) {
+      const backendDomain = envApi.replace(/\/api\/?$/, '');
+      return `${backendDomain}${path.startsWith('/') ? '' : '/'}${path}`;
+    }
     return path;
   };
 
