@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { runSeed } from '../utils/seed.js';
 
 let mongod = null;
@@ -32,8 +31,13 @@ const connectDB = async () => {
     }
 
     if (!localConnected) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('All database connections failed. Exiting production process.');
+        process.exit(1);
+      }
       try {
         console.log('Starting local in-memory MongoDB database server (with 60s launch timeout)...');
+        const { MongoMemoryServer } = await import('mongodb-memory-server');
         mongod = await MongoMemoryServer.create({
           instance: {
             launchTimeout: 60000
