@@ -10,10 +10,7 @@
       "destination": "/api/index.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "source": "/:path*",
+      "source": "/((?!assets/|api/|uploads/|favicon.ico|logo.jpg).*)",
       "destination": "/index.html"
     }
   ]
