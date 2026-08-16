@@ -164,7 +164,7 @@ const runSeed = async (customURI = null, shouldClose = true) => {
     // 3. Define Seed Data Structure with Famous Real-World Artists
     const artistsData = [
       { name: 'Ed Sheeran', bio: 'Edward Christopher Sheeran is a globally celebrated English singer-songwriter and pop icon.', coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80' },
-      { name: 'Arijit Singh', bio: 'Arijit Singh is a legendary Indian playback singer known for soulful romantic Hindi pop ballads.', coverUrl: 'https://images.unsplash.com/photo-1487180142328-0c4e37023af5?w=500&q=80' },
+      { name: 'Arijit Singh', bio: 'Arijit Singh is a legendary Indian playback singer known for soulful romantic Hindi pop ballads.', coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&q=80' },
       { name: 'Anirudh Ravichander', bio: 'Anirudh is a leading music composer and singer dominating the Tamil and South Indian film music industry.', coverUrl: 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80' },
       { name: 'Vijay Prakash', bio: 'Vijay Prakash is an acclaimed Indian playback singer and composer delivering rich Kannada melodies.', coverUrl: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80' },
       { name: 'Traditional Coastal', bio: 'Traditional folk musicians and groups preserving the cultural beats of Tulunadu.', coverUrl: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80' },
@@ -174,7 +174,7 @@ const runSeed = async (customURI = null, shouldClose = true) => {
 
     const albumsData = [
       { title: 'Divide & Collab', artistName: 'Ed Sheeran', releaseYear: 2017, coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80' },
-      { title: 'Bollywood Magic', artistName: 'Arijit Singh', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1487180142328-0c4e37023af5?w=500&q=80' },
+      { title: 'Bollywood Magic', artistName: 'Arijit Singh', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&q=80' },
       { title: 'Madras Hits', artistName: 'Anirudh Ravichander', releaseYear: 2024, coverUrl: 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80' },
       { title: 'Sandalwood Gems', artistName: 'Vijay Prakash', releaseYear: 2023, coverUrl: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80' },
       { title: 'Tulunada Folk', artistName: 'Traditional Coastal', releaseYear: 2022, coverUrl: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80' },
