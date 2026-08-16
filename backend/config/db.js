@@ -10,7 +10,7 @@ const connectDB = async () => {
   try {
     console.log(`Connecting to MongoDB: ${primaryURI}...`);
     const conn = await mongoose.connect(primaryURI, {
-      serverSelectionTimeoutMS: 5000
+      serverSelectionTimeoutMS: 30000
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
@@ -32,8 +32,8 @@ const connectDB = async () => {
 
     if (!localConnected) {
       if (process.env.NODE_ENV === 'production') {
-        console.error('All database connections failed. Exiting production process.');
-        process.exit(1);
+        console.error('All database connections failed. Server will continue running and retry on requests.');
+        return;
       }
       try {
         console.log('Starting local in-memory MongoDB database server (with 60s launch timeout)...');
