@@ -107,6 +107,17 @@ app.use('/api/history', historyRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 
+app.get('/api/health', async (req, res) => {
+  const uri = process.env.MONGODB_URI || 'fallback';
+  const maskedUri = uri.replace(/:([^@]+)@/, ':****@');
+  res.json({
+    status: 'active',
+    databaseState: mongoose.connection.readyState,
+    uriUsed: maskedUri,
+    env: process.env.NODE_ENV
+  });
+});
+
 app.get('/api', (req, res) => {
   res.json({ message: 'MelodyAI Music Player API is running natively on Vercel Serverless!' });
 });
