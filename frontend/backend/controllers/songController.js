@@ -2,6 +2,7 @@ import Song from '../models/Song.js';
 import ListeningHistory from '../models/ListeningHistory.js';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { staticSongs } from '../data/songsData.js';
 
 // Helper to check if user token is provided in playback tracking
 const getOptionalUser = async (req) => {
@@ -24,37 +25,61 @@ export const getAllSongs = async (req, res) => {
   const { search, genre, language, limit, page } = req.query;
 
   try {
-    const query = {};
-
-    if (genre) {
-      query.genre = { $regex: new RegExp('^' + genre + '$', 'i') };
-    }
-
-    if (language) {
-      query.language = { $regex: new RegExp('^' + language + '$', 'i') };
-    }
-
-    if (search) {
-      // Use text search index or regex fallback
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { artistName: { $regex: search, $options: 'i' } },
-        { albumName: { $regex: search, $options: 'i' } },
-        { genre: { $regex: search, $options: 'i' } },
-        { language: { $regex: search, $options: 'i' } }
-      ];
-    }
-
+    let songs = [];
+    let total = 0;
     const pageSize = parseInt(limit) || 50;
     const pageNum = parseInt(page) || 1;
     const skip = (pageNum - 1) * pageSize;
 
-    const songs = await Song.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(pageSize);
+    // 1. Try querying MongoDB Atlas
+    try {
+      const query = {};
+      if (genre) {
+        query.genre = { $regex: new RegExp('^' + genre + '$', 'i') };
+      }
+      if (language) {
+        query.language = { $regex: new RegExp('^' + language + '$', 'i') };
+      }
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { artistName: { $regex: search, $options: 'i' } },
+          { albumName: { $regex: search, $options: 'i' } },
+          { genre: { $regex: search, $options: 'i' } },
+          { language: { $regex: search, $options: 'i' } }
+        ];
+      }
+      songs = await Song.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(pageSize);
+      total = await Song.countDocuments(query);
+    } catch (dbError) {
+      console.warn('MongoDB query failed, falling back to static songs data:', dbError.message);
+    }
 
-    const total = await Song.countDocuments(query);
+    // 2. Fallback: Serve static songs if DB returns nothing (or fails)
+    if (!songs || songs.length === 0) {
+      let filtered = [...staticSongs];
+      if (genre) {
+        filtered = filtered.filter(s => s.genre.toLowerCase() === genre.toLowerCase());
+      }
+      if (language) {
+        filtered = filtered.filter(s => s.language.toLowerCase() === language.toLowerCase());
+      }
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filtered = filtered.filter(s =>
+          s.title.toLowerCase().includes(searchLower) ||
+          s.artistName.toLowerCase().includes(searchLower) ||
+          s.albumName.toLowerCase().includes(searchLower) ||
+          s.genre.toLowerCase().includes(searchLower) ||
+          s.language.toLowerCase().includes(searchLower)
+        );
+      }
+      total = filtered.length;
+      songs = filtered.slice(skip, skip + pageSize);
+    }
 
     res.json({
       songs,
@@ -72,7 +97,17 @@ export const getAllSongs = async (req, res) => {
 // @access  Public
 export const getSongById = async (req, res) => {
   try {
-    const song = await Song.findById(req.params.id).populate('artist').populate('album');
+    let song = null;
+    try {
+      song = await Song.findById(req.params.id).populate('artist').populate('album');
+    } catch (dbError) {
+      console.warn('MongoDB findById failed, falling back to static data:', dbError.message);
+    }
+
+    if (!song) {
+      song = staticSongs.find(s => s._id === req.params.id);
+    }
+
     if (song) {
       res.json(song);
     } else {
