@@ -6,10 +6,8 @@ node_modules/
 .env
 backend/.env
 
-# Large downloaded assets (MP3s and JPGs)
-backend/uploads/
-!backend/uploads/default-cover.png
-uploads/
+# Large downloaded assets tracked via Git LFS (MP3s and images)
+# backend/uploads/ is tracked by LFS - do NOT ignore
 
 # Production builds
 dist/
