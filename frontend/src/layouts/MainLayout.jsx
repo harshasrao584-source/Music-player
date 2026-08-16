@@ -30,8 +30,8 @@ const MainLayout = ({ children }) => {
     <div className="flex flex-col h-screen w-screen bg-[var(--bg-main)] text-[var(--text-primary)] overflow-hidden font-outfit relative">
       
       {/* Ambient background glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vh] rounded-full bg-violet-600/10 dark:bg-violet-800/10 blur-[130px] pointer-events-none z-0"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vh] rounded-full bg-fuchsia-500/10 dark:bg-fuchsia-800/10 blur-[130px] pointer-events-none z-0"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vh] rounded-full bg-violet-600/10 dark:bg-violet-800/10 blur-[130px] pointer-events-none z-0 animate-drift-1"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vh] rounded-full bg-fuchsia-500/10 dark:bg-fuchsia-800/10 blur-[130px] pointer-events-none z-0 animate-drift-2"></div>
       
       {/* Top Body container (Sidebar + Content + Panels) */}
       <div className="flex-1 flex overflow-hidden z-10">

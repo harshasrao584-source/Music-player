@@ -109,3 +109,40 @@
   animation: equalizer-bar 1.2s ease-in-out infinite;
   transform-origin: bottom;
 }
+
+/* Drift animations for dynamic background glows */
+@keyframes drift-1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.15);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes drift-2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-50px, 50px) scale(1.2);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-drift-1 {
+  animation: drift-1 25s ease-in-out infinite;
+}
+
+.animate-drift-2 {
+  animation: drift-2 30s ease-in-out infinite;
+}
+
