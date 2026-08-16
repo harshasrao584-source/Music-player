@@ -228,7 +228,7 @@ const PlaylistDetail = () => {
                     <td className="py-3 px-6">
                       <div className="flex items-center gap-3">
                         <img
-                          src={song.coverUrl ? `http://localhost:5000${song.coverUrl}` : '/uploads/default-cover.png'}
+                          src={song.coverUrl || '/uploads/default-cover.png'}
                           alt={song.title}
                           className="w-10 h-10 rounded-lg object-cover shadow"
                         />

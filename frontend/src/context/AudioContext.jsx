@@ -22,7 +22,7 @@ export const AudioProvider = ({ children }) => {
   const getFullUrl = (path) => {
     if (!path) return '';
     if (path.startsWith('http')) return path;
-    return `http://localhost:5000${path}`;
+    return path;
   };
 
   // Configure audio properties on load

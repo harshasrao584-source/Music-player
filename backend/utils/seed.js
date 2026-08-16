@@ -90,8 +90,8 @@ const writeDummyFile = (destPath) => {
   }
 };
 
-const runSeed = async () => {
-  const primaryURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/melodyai';
+const runSeed = async (customURI = null, shouldClose = true) => {
+  const primaryURI = customURI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/melodyai';
   const fallbackURI = 'mongodb://127.0.0.1:27017/melodyai';
 
   try {
@@ -354,11 +354,19 @@ const runSeed = async () => {
     }
 
     console.log('Seeding process completed successfully!');
-    mongoose.connection.close();
+    if (shouldClose) {
+      mongoose.connection.close();
+    }
   } catch (error) {
     console.error('Seeding error:', error.message);
-    mongoose.connection.close();
+    if (shouldClose) {
+      mongoose.connection.close();
+    }
   }
 };
 
-runSeed();
+export { runSeed };
+
+if (process.argv[1] && process.argv[1].includes('seed.js')) {
+  runSeed();
+}

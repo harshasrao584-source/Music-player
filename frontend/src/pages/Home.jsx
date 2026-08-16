@@ -174,7 +174,7 @@ const Home = () => {
               >
                 <div className="relative overflow-hidden rounded-xl aspect-square mb-3">
                   <img
-                    src={song.coverUrl ? `http://localhost:5000${song.coverUrl}` : '/uploads/default-cover.png'}
+                    src={song.coverUrl || '/uploads/default-cover.png'}
                     alt={song.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
                   />
@@ -215,7 +215,7 @@ const Home = () => {
               >
                 <div className="relative overflow-hidden rounded-xl aspect-square mb-3 shadow-md">
                   <img
-                    src={song.coverUrl ? `http://localhost:5000${song.coverUrl}` : '/uploads/default-cover.png'}
+                    src={song.coverUrl || '/uploads/default-cover.png'}
                     alt={song.title}
                     className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
                   />
@@ -254,7 +254,7 @@ const Home = () => {
               >
                 <div className="relative overflow-hidden rounded-xl aspect-square mb-3 shadow-md">
                   <img
-                    src={song.coverUrl ? `http://localhost:5000${song.coverUrl}` : '/uploads/default-cover.png'}
+                    src={song.coverUrl || '/uploads/default-cover.png'}
                     alt={song.title}
                     className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
                   />
@@ -293,7 +293,7 @@ const Home = () => {
                 }`}
               >
                 <img
-                  src={song.coverUrl ? `http://localhost:5000${song.coverUrl}` : '/uploads/default-cover.png'}
+                  src={song.coverUrl || '/uploads/default-cover.png'}
                   alt={song.title}
                   className="w-12 h-12 rounded-xl object-cover shadow"
                 />

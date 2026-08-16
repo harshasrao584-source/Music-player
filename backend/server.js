@@ -52,6 +52,61 @@ if (!fs.existsSync(defaultCoverPath)) {
 // Static folder routing for file requests
 app.use('/uploads', express.static(uploadPath));
 
+// Fallback middleware if static file is not found (useful for ephemeral environments like Render)
+app.use('/uploads/:filename', (req, res) => {
+  const filename = req.params.filename;
+
+  // 1. Cover seeds (cover-seed-1.jpg to cover-seed-10.jpg)
+  if (filename.startsWith('cover-seed-')) {
+    const index = parseInt(filename.split('-').pop()) - 1;
+    const coverUrlsList = [
+      'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=500&q=80',
+      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80',
+      'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=500&q=80',
+      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80',
+      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80',
+      'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500&q=80',
+      'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=500&q=80',
+      'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=500&q=80',
+      'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&q=80',
+      'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80'
+    ];
+    const url = coverUrlsList[index % coverUrlsList.length] || coverUrlsList[0];
+    return res.redirect(url);
+  }
+
+  // 2. Song seeds (song-seed-1.mp3 to song-seed-16.mp3)
+  if (filename.startsWith('song-seed-')) {
+    const index = parseInt(filename.split('-').pop());
+    if (!isNaN(index)) {
+      const url = `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${index}.mp3`;
+      return res.redirect(url);
+    }
+  }
+
+  // 3. Artist images (e.g. artist-ed-sheeran.jpg)
+  if (filename.startsWith('artist-')) {
+    return res.redirect('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80');
+  }
+
+  // 4. Album covers (e.g. album-divide-&-collab.jpg)
+  if (filename.startsWith('album-')) {
+    return res.redirect('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80');
+  }
+
+  // 5. Default avatar fallback
+  if (filename === 'default-avatar.png') {
+    return res.redirect('https://api.dicebear.com/7.x/adventurer/svg?seed=melody');
+  }
+
+  // 6. Default cover fallback
+  if (filename === 'default-cover.png') {
+    return res.sendFile(path.join(uploadPath, 'default-cover.png'));
+  }
+
+  res.status(404).send('File not found');
+});
+
 // API Routes Mapping
 app.use('/api/auth', authRoutes);
 app.use('/api/songs', songRoutes);

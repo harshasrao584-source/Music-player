@@ -114,10 +114,9 @@ const BottomPlayer = ({
   return (
     <div className="h-24 glass-effect border-t border-[var(--border-color)] flex items-center justify-between px-6 py-3 select-none">
       
-      {/* Left Section: Track Info and Equalizer */}
       <div className="flex items-center gap-3 w-1/3 min-w-0">
         <img
-          src={currentSong.coverUrl ? `http://localhost:5000${currentSong.coverUrl}` : '/uploads/default-cover.png'}
+          src={currentSong.coverUrl || '/uploads/default-cover.png'}
           alt={currentSong.title}
           className={`w-14 h-14 rounded-lg object-cover shadow-lg ${isPlaying ? 'animate-spin-slow' : 'paused'}`}
         />

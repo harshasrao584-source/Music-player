@@ -335,7 +335,7 @@ const AdminDashboard = () => {
               <div key={song._id} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-transparent hover:border-[var(--border-color)]">
                 <div className="flex items-center gap-3 min-w-0">
                   <img
-                    src={`http://localhost:5000${song.coverUrl}`}
+                    src={song.coverUrl || '/uploads/default-cover.png'}
                     alt="cover"
                     className="w-10 h-10 rounded-lg object-cover shadow"
                   />

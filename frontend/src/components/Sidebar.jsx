@@ -70,15 +70,14 @@ const Sidebar = ({ onCreatePlaylistSuccess }) => {
   const getFullAvatarUrl = (avatarPath) => {
     if (!avatarPath) return 'https://api.dicebear.com/7.x/adventurer/svg?seed=melody';
     if (avatarPath.startsWith('http')) return avatarPath;
-    return `http://localhost:5000${avatarPath}`;
+    return avatarPath;
   };
 
   return (
     <aside className="w-64 glass-effect border-r border-[var(--border-color)] flex flex-col h-full text-[var(--text-primary)]">
-      {/* Brand Logo */}
       <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-violet-600 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
-          <Music className="w-6 h-6 text-white animate-pulse" />
+        <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-violet-500/20">
+          <img src="/logo.jpg" alt="MelodyAI Logo" className="w-full h-full object-cover animate-pulse" />
         </div>
         <div>
           <h1 className="text-xl font-bold tracking-tight bg-linear-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent font-outfit">

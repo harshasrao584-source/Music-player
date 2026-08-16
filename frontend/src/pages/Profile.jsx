@@ -30,7 +30,7 @@ const Profile = () => {
   const getFullAvatarUrl = (avatarPath) => {
     if (!avatarPath) return `https://api.dicebear.com/7.x/adventurer/svg?seed=${avatarSeed}`;
     if (avatarPath.startsWith('http')) return avatarPath;
-    return `http://localhost:5000${avatarPath}`;
+    return avatarPath;
   };
 
   const handleClearPlayHistory = async () => {

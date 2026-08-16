@@ -53,7 +53,7 @@ const QueuePanel = ({ isOpen, onClose }) => {
                   }`}
                 >
                   <img
-                    src={song.coverUrl ? `http://localhost:5000${song.coverUrl}` : '/uploads/default-cover.png'}
+                    src={song.coverUrl || '/uploads/default-cover.png'}
                     alt={song.title}
                     className="w-10 h-10 rounded-lg object-cover shadow"
                   />

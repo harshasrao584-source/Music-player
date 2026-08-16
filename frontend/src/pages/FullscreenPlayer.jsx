@@ -159,7 +159,7 @@ const FullscreenPlayer = ({ isOpen, onClose }) => {
 
   if (!isOpen || !currentSong) return null;
 
-  const bgImage = currentSong.coverUrl ? `http://localhost:5000${currentSong.coverUrl}` : '/uploads/default-cover.png';
+  const bgImage = currentSong.coverUrl || '/uploads/default-cover.png';
 
   return (
     <div className="fixed inset-0 z-50 bg-[#060309] text-white flex flex-col justify-between overflow-hidden">

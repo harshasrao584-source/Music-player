@@ -37,8 +37,8 @@ const Register = () => {
       {/* Main Glassmorphic Card */}
       <div className="w-full max-w-md glass-card rounded-3xl p-8 border border-[var(--border-color)] relative z-10">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-linear-to-tr from-violet-600 to-fuchsia-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-500/20">
-            <Music className="w-7 h-7 text-white" />
+          <div className="w-12 h-12 rounded-2xl overflow-hidden mx-auto mb-4 shadow-lg shadow-violet-500/20">
+            <img src="/logo.jpg" alt="MelodyAI Logo" className="w-full h-full object-cover animate-pulse" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Create your account</h2>
           <p className="text-xs text-[var(--text-secondary)] mt-1">Join MelodyAI to personalize your listening profile</p>
