@@ -272,7 +272,7 @@ const runSeed = async (customURI = null, shouldClose = true) => {
       const artist = await Artist.create({
         name: art.name,
         bio: art.bio,
-        imageUrl: coverPath
+        imageUrl: process.env.NODE_ENV === 'production' ? art.coverUrl : coverPath
       });
       seededArtists[art.name] = artist;
     }
@@ -287,7 +287,7 @@ const runSeed = async (customURI = null, shouldClose = true) => {
         title: alb.title,
         artist: artist._id,
         releaseYear: alb.releaseYear,
-        coverUrl: coverPath
+        coverUrl: process.env.NODE_ENV === 'production' ? alb.coverUrl : coverPath
       });
       seededAlbums[alb.title] = album;
     }
@@ -300,7 +300,16 @@ const runSeed = async (customURI = null, shouldClose = true) => {
       const album = seededAlbums[s.albumName];
 
       const coverPath = await downloadFile(s.coverUrl, s.coverFilename);
-      const audioPath = await downloadFile(s.audioUrl, s.audioFilename);
+      // For audio: always download locally but ALSO store the external URL as primary
+      // so that ephemeral server environments (Render free tier) can still stream audio.
+      await downloadFile(s.audioUrl, s.audioFilename);
+      // Use external URLs as canonical in production (Render ephemeral FS)
+      const audioPath = process.env.NODE_ENV === 'production'
+        ? s.audioUrl
+        : `/uploads/${s.audioFilename}`;
+      const finalCoverUrl = process.env.NODE_ENV === 'production'
+        ? s.coverUrl
+        : coverPath;
 
       const song = await Song.create({
         title: s.title,
@@ -311,7 +320,7 @@ const runSeed = async (customURI = null, shouldClose = true) => {
         genre: s.genre,
         language: s.language,
         duration: s.duration,
-        coverUrl: coverPath,
+        coverUrl: finalCoverUrl,
         audioUrl: audioPath,
         playCount: Math.floor(Math.random() * 100) + 10,
         likeCount: Math.floor(Math.random() * 20) + 5

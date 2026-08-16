@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "start:prod": "node utils/seed.js && node server.js",
     "dev": "node server.js",
     "seed": "node utils/seed.js"
   },
