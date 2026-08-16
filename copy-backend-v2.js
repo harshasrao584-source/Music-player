@@ -20,4 +20,4 @@ function copyDir(src, dest) {
 }
 
 copyDir('backend', 'frontend/backend');
-console.log('Successfully copied all backend files (including songsData.js) into frontend/backend!');
+console.log('Successfully copied all backend files into frontend/backend!');
