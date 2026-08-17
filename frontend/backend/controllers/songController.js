@@ -27,7 +27,7 @@ export const getAllSongs = async (req, res) => {
   try {
     let songs = [];
     let total = 0;
-    const pageSize = parseInt(limit) || 50;
+    const pageSize = parseInt(limit) || 100;
     const pageNum = parseInt(page) || 1;
     const skip = (pageNum - 1) * pageSize;
 
